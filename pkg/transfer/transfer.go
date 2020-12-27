@@ -19,30 +19,39 @@ func NewService(c *card.Service, commission float64, rubMin int64) *Service {
 }
 
 // Card2Card method
-func (s *Service) Card2Card(from, to string, amount int64) (total int, ok bool) {
-	// TODO Всегда проверяем баланс для совершения операции
-	// Между картами тиньков, коммиссии нет
-	if from == "0020" {
-		if to == "0020" {
-			fmt.Println("Карты для перевода выпущены одним банком")
-			return
+func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool) {
+	fromCard := s.CardSvc.SearchCard(from)
+	toCard := s.CardSvc.SearchCard(to)
+
+	// Если обе карты наши
+	if fromCard != nil && toCard != nil {
+		if fromCard.Balance < amount {
+			fmt.Println("Недостаточно денег для перевода")
+			return amount, false
 		}
+
+		fromCard.Balance -= amount
+		toCard.Balance += amount
+		return toCard.Balance, true
 	}
-	// На карту тиньков, коммиссии нет
-	if from != "0020" {
-		if to == "0020" {
-			fmt.Println("Перевод с неизвестного банка на карту тиньков")
-			return
+	// From карта наша, перевод на чужую
+	if fromCard != nil && toCard == nil {
+		//fmt.Println("Перевод с нашей канты на другой банк")
+		if amount < 10 {
+			fmt.Println("Сумма не должна быть меньше 10 руб.")
+			return fromCard.Balance, false
 		}
+
+		if fromCard.Balance < amount {
+			fmt.Println("Недостаточно денег для перевода")
+			return amount, false
+		}
+
+		resultAmount := float64(amount) * (1 - 0.5/100)
+		fromCard.Balance -= int64(resultAmount)
+		return fromCard.Balance, true
+
 	}
 
-	// Между картами других банков 1.5% или минимум 10 руб
-	if from != "0020" {
-		if to != "0020" {
-			fmt.Println("Переводы между картами других банков, имеем с них копейки наши")
-			return
-		}
-	}
-
-	return
+	return 0, false
 }

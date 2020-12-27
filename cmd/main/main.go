@@ -7,15 +7,11 @@ import (
 
 func main() {
 	bank1 := card.NewService("Tinkoff bank")
-	bank2 := card.NewService("SberBank")
-	client1 := bank1.IssueCard("Master Card", "RUB", "0020", 50_000)
-	// card2 := bank1.IssueCard("МИР", "RUB", "0020", 10_000)
-	client3 := bank2.IssueCard("VISA", "RUB", "0030", 15_000)
+
+	client1 := bank1.IssueCard(1, "Master Card", "RUB", "1020", 50_000)
+	client2 := bank1.IssueCard(2, "VISA", "RUB", "1030", 500)
 
 	t := transfer.NewService(bank1, 1.5, 10)
-	t.Card2Card(client1.Number, client1.Number, 50)
-	t.Card2Card(client1.Number, client3.Number, 50)
-	t.Card2Card(client3.Number, client3.Number, 300)
-
-	bank1.SearchCard("0020")
+	t.Card2Card(client1.Number, client2.Number, 50_000)
+	t.Card2Card(client2.Number, "0001", 100)
 }

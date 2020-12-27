@@ -21,9 +21,10 @@ func NewService(BankName string) *Service {
 	return &Service{BankName: BankName}
 }
 
-// IssueCard ....
-func (s *Service) IssueCard(issue, currency, number string, balance int64) *Card {
+// IssueCard выпуск карта для нашего банка
+func (s *Service) IssueCard(id int64, issue, currency, number string, balance int64) *Card {
 	card := &Card{
+		ID:       id,
 		Issuer:   issue,
 		Balance:  balance,
 		Currency: currency,
@@ -33,7 +34,7 @@ func (s *Service) IssueCard(issue, currency, number string, balance int64) *Card
 	return card
 }
 
-// SearchCard by number. ex: 0020
+// SearchCard Проверяем карту, является ли она нашего банка
 func (s *Service) SearchCard(cardNum string) *Card {
 	for _, row := range s.Cards {
 		if row.Number == cardNum {

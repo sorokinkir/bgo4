@@ -37,14 +37,9 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 	// From карта наша, перевод на чужую
 	if fromCard != nil && toCard == nil {
 		//fmt.Println("Перевод с нашей канты на другой банк")
-		if amount < 10 {
-			fmt.Println("Сумма не должна быть меньше 10 руб.")
+		if amount < 10 && fromCard.Balance <= amount {
+			fmt.Println("Сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
 			return fromCard.Balance, false
-		}
-
-		if fromCard.Balance < amount {
-			fmt.Println("Недостаточно денег для перевода")
-			return amount, false
 		}
 
 		resultAmount := float64(amount) * (1 - 0.5/100)

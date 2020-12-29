@@ -36,13 +36,12 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 	}
 	// From карта наша, перевод на чужую
 	if fromCard != nil && toCard == nil {
-		//fmt.Println("Перевод с нашей канты на другой банк")
-		if amount < 10 && fromCard.Balance <= amount {
+		if amount < s.RubMin || fromCard.Balance <= amount {
 			fmt.Println("Сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
 			return fromCard.Balance, false
 		}
 
-		resultAmount := float64(amount) * (1 - 0.5/100)
+		resultAmount := float64(amount) * (s.Commission / 100)
 		fromCard.Balance -= int64(resultAmount)
 		return fromCard.Balance, true
 
@@ -57,14 +56,14 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 
 	// Перевод с карты на карту не нашего банка
 	if fromCard == nil && toCard == nil {
-		if amount < 30 {
+		if amount < s.RubMin {
 			fmt.Println("Сумма должна быть больше 30 руб. для перевода.")
 		} else {
-			resultAmount := float64(amount) * (1 - 1.5/100)
+			resultAmount := float64(amount) * (s.Commission / 100)
 			resultAmount += float64(amount)
 			return int64(resultAmount), true
 		}
 	}
 
-	return 0, false
+	return amount, false
 }

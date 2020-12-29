@@ -14,4 +14,5 @@ func main() {
 	t := transfer.NewService(bank1, 1.5, 10)
 	t.Card2Card(client1.Number, client2.Number, 50_000)
 	t.Card2Card(client2.Number, "0001", 100)
+	t.Card2Card("0002", "0003", 30)
 }

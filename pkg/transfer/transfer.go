@@ -14,8 +14,8 @@ type Service struct {
 }
 
 // NewService transfer package
-func NewService(c *card.Service, commission float64, rubMin int64) *Service {
-	return &Service{CardSvc: c, Commission: commission, RubMin: rubMin}
+func NewService(cardsvc *card.Service, commission float64, rubMin int64) *Service {
+	return &Service{CardSvc: cardsvc, Commission: commission, RubMin: rubMin}
 }
 
 // Card2Card method
@@ -46,6 +46,24 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 		fromCard.Balance -= int64(resultAmount)
 		return fromCard.Balance, true
 
+	}
+
+	// Перевод на нашу карту
+	if fromCard == nil && toCard != nil {
+		// Баланс не проверяем, т.к. перевод на карту нашего банка
+		toCard.Balance += amount
+		return toCard.Balance, true
+	}
+
+	// Перевод с карты на карту не нашего банка
+	if fromCard == nil && toCard == nil {
+		if amount < 30 {
+			fmt.Println("Сумма должна быть больше 30 руб. для перевода.")
+		} else {
+			resultAmount := float64(amount) * (1 - 1.5/100)
+			resultAmount += float64(amount)
+			return int64(resultAmount), true
+		}
 	}
 
 	return 0, false

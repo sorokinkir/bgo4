@@ -13,7 +13,7 @@ func main() {
 	client1 := bank1.IssueCard(1, "Master Card", "RUB", "1020", 50_000)
 	client2 := bank1.IssueCard(2, "VISA", "RUB", "1030", 500)
 
-	ownBank := transfer.NewService(bank1, 0, 0)
+	ownBank := transfer.NewService(bank1, 0, 10)
 	fmt.Println(ownBank.Card2Card(client1.Number, client2.Number, 50_000))
 
 	fromOwnBank := transfer.NewService(bank1, 0.5, 10)

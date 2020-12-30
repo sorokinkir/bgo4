@@ -44,3 +44,8 @@ func (s *Service) SearchCard(cardNum string) *Card {
 	// Ничего не возвращаем тогда
 	return nil
 }
+
+// Add добавлен метод для добавления карт
+func (s *Service) Add(cards ...*Card) {
+	s.Cards = append(s.Cards, cards...)
+}

@@ -25,8 +25,8 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 
 	// Если обе карты наши
 	if fromCard != nil && toCard != nil {
-		if fromCard.Balance < amount {
-			fmt.Println("Недостаточно денег для перевода")
+		if fromCard.Balance < amount || amount < s.RubMin {
+			fmt.Println("Недостаточно денег для перевода или необходимо минимум 10 руб.")
 			return amount, false
 		}
 

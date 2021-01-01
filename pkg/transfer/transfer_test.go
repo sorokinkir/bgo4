@@ -91,7 +91,7 @@ func TestService_Card2Card(t *testing.T) {
 			name:      "Карта чужого банка -> Карта чужого банка",
 			fields:    fields{CardSvc: cardSvc, Commission: 1.5, RubMin: 30},
 			args:      args{from: "0013", to: "0014", amount: 200},
-			wantTotal: 210,
+			wantTotal: 203,
 			wantOk:    true,
 		},
 	}

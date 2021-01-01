@@ -26,7 +26,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 	// Если обе карты наши
 	if fromCard != nil && toCard != nil {
 		if fromCard.Balance < amount || amount < s.RubMin {
-			fmt.Println("Недостаточно денег для перевода или необходимо минимум 10 руб.")
+			// fmt.Println("Недостаточно денег для перевода или необходимо минимум 10 руб.")
 			return amount, false
 		}
 
@@ -36,33 +36,37 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 	}
 	// From карта наша, перевод на чужую
 	if fromCard != nil && toCard == nil {
+		resultProcent := float64(amount) * (s.Commission / 100)
+		finalSumAmount := float64(amount) + resultProcent
+
 		if amount < s.RubMin || fromCard.Balance <= amount {
-			fmt.Println("Сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
-			return fromCard.Balance, false
+			// fmt.Println("Сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
+			return int64(finalSumAmount), false
 		}
 
-		resultAmount := float64(amount) * (s.Commission / 100)
-		fromCard.Balance -= int64(resultAmount)
-		return fromCard.Balance, true
+		fromCard.Balance -= int64(finalSumAmount)
+		return int64(finalSumAmount), true
 
 	}
 
 	// Перевод на нашу карту
 	if fromCard == nil && toCard != nil {
-		// Баланс не проверяем, т.к. перевод на карту нашего банка
-		toCard.Balance += amount
-		return toCard.Balance, true
+		resultProcent := float64(amount) * (s.Commission / 100)
+		finalSumAmount := float64(amount) + resultProcent
+		// Зачисляем на карту итоговую сумму + комиссию
+		toCard.Balance += int64(finalSumAmount)
+		return int64(finalSumAmount), true
 	}
 
 	// Перевод с карты на карту не нашего банка
 	if fromCard == nil && toCard == nil {
-		if amount < s.RubMin {
-			fmt.Println("Сумма должна быть больше 30 руб. для перевода.")
-		} else {
-			resultAmount := float64(amount) * (s.Commission / 100)
-			resultAmount += float64(amount)
-			return int64(resultAmount), true
+		resultProcent := float64(amount) * (s.Commission / 100)
+		finalSumAmount := float64(amount) + resultProcent
+		if amount <= s.RubMin {
+			fmt.Println("Сумма должна быть больше или равен 30 руб. для перевода.")
+			return amount, false
 		}
+		return int64(finalSumAmount), true
 	}
 
 	return amount, false

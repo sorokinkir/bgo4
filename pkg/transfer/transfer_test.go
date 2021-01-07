@@ -54,14 +54,14 @@ func TestService_Card2Card(t *testing.T) {
 	}{
 		{
 			name:      "Карта своего банка -> Карта своего банка (денег достаточно на той карте, с которой отправляется)",
-			fields:    fields{CardSvc: cardSvc, Commission: 0, RubMin: 10},
+			fields:    fields{CardSvc: cardSvc, Commission: 0.5, RubMin: 10},
 			args:      args{from: "0001", to: "0002", amount: 100},
-			wantTotal: 500,
+			wantTotal: 100,
 			wantOk:    true,
 		},
 		{
 			name:      "Карта своего банка -> Карта своего банка (денег недостаточно на той карте, с которой отправляется)",
-			fields:    fields{CardSvc: cardSvc, Commission: 0, RubMin: 10},
+			fields:    fields{CardSvc: cardSvc, Commission: 0.5, RubMin: 10},
 			args:      args{from: "0001", to: "0002", amount: 600},
 			wantTotal: 600,
 			wantOk:    false,

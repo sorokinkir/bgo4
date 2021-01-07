@@ -29,10 +29,11 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 			// fmt.Println("Недостаточно денег для перевода или необходимо минимум 10 руб.")
 			return amount, false
 		}
-
+		resultProcent := float64(amount) * (s.Commission / 100)
+		finalSumAmount := float64(amount) + resultProcent
 		fromCard.Balance -= amount
 		toCard.Balance += amount
-		return toCard.Balance, true
+		return int64(finalSumAmount), true
 	}
 	// From карта наша, перевод на чужую
 	if fromCard != nil && toCard == nil {

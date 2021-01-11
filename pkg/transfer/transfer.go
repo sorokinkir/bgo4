@@ -1,7 +1,7 @@
 package transfer
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/sorokinkir/bgo4/pkg/card"
 )
@@ -13,27 +13,33 @@ type Service struct {
 	RubMin     int64
 }
 
+var (
+	ErrOwnToOwnCardTransfer         = errors.New("недостаточно денег для перевода или необходимо минимум 10 руб")
+	ErrOwnToUnknownCardTransfer     = errors.New("сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
+	ErrUnknownToUnknownCardTransfer = errors.New("сумма должна быть больше или равен 30 руб. для перевода")
+	ErrUnknown                      = errors.New("unknown error")
+)
+
 // NewService transfer package
 func NewService(cardsvc *card.Service, commission float64, rubMin int64) *Service {
 	return &Service{CardSvc: cardsvc, Commission: commission, RubMin: rubMin}
 }
 
 // Card2Card method
-func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool) {
+func (s *Service) Card2Card(from, to string, amount int64) (total int64, err error) {
 	fromCard := s.CardSvc.SearchCard(from)
 	toCard := s.CardSvc.SearchCard(to)
 
 	// Если обе карты наши
 	if fromCard != nil && toCard != nil {
 		if fromCard.Balance < amount || amount < s.RubMin {
-			// fmt.Println("Недостаточно денег для перевода или необходимо минимум 10 руб.")
-			return amount, false
+			return amount, ErrOwnToOwnCardTransfer
 		}
 		resultProcent := float64(amount) * (s.Commission / 100)
 		finalSumAmount := float64(amount) + resultProcent
 		fromCard.Balance -= amount
 		toCard.Balance += amount
-		return int64(finalSumAmount), true
+		return int64(finalSumAmount), nil
 	}
 	// From карта наша, перевод на чужую
 	if fromCard != nil && toCard == nil {
@@ -41,12 +47,11 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 		finalSumAmount := float64(amount) + resultProcent
 
 		if amount < s.RubMin || fromCard.Balance <= amount {
-			// fmt.Println("Сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
-			return int64(finalSumAmount), false
+			return int64(finalSumAmount), ErrOwnToUnknownCardTransfer
 		}
 
 		fromCard.Balance -= int64(finalSumAmount)
-		return int64(finalSumAmount), true
+		return int64(finalSumAmount), nil
 
 	}
 
@@ -56,7 +61,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 		finalSumAmount := float64(amount) + resultProcent
 		// Зачисляем на карту итоговую сумму + комиссию
 		toCard.Balance += int64(finalSumAmount)
-		return int64(finalSumAmount), true
+		return int64(finalSumAmount), nil
 	}
 
 	// Перевод с карты на карту не нашего банка
@@ -64,11 +69,10 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 		resultProcent := float64(amount) * (s.Commission / 100)
 		finalSumAmount := float64(amount) + resultProcent
 		if amount <= s.RubMin {
-			fmt.Println("Сумма должна быть больше или равен 30 руб. для перевода.")
-			return amount, false
+			return amount, ErrUnknownToUnknownCardTransfer
 		}
-		return int64(finalSumAmount), true
+		return int64(finalSumAmount), nil
 	}
 
-	return amount, false
+	return amount, ErrUnknown
 }

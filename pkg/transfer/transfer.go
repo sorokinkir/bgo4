@@ -14,6 +14,7 @@ type Service struct {
 }
 
 var (
+	ErrInvalidCard                  = errors.New("введеный номер карты не нашего банка")
 	ErrOwnToOwnCardTransfer         = errors.New("недостаточно денег для перевода или необходимо минимум 10 руб")
 	ErrOwnToUnknownCardTransfer     = errors.New("сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
 	ErrUnknownToUnknownCardTransfer = errors.New("сумма должна быть больше или равен 30 руб. для перевода")
@@ -27,8 +28,8 @@ func NewService(cardsvc *card.Service, commission float64, rubMin int64) *Servic
 
 // Card2Card method
 func (s *Service) Card2Card(from, to string, amount int64) (total int64, err error) {
-	fromCard := s.CardSvc.SearchCard(from)
-	toCard := s.CardSvc.SearchCard(to)
+	fromCard, _ := s.CardSvc.SearchCard(from)
+	toCard, _ := s.CardSvc.SearchCard(to)
 
 	// Если обе карты наши
 	if fromCard != nil && toCard != nil {
@@ -52,7 +53,6 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, err err
 
 		fromCard.Balance -= int64(finalSumAmount)
 		return int64(finalSumAmount), nil
-
 	}
 
 	// Перевод на нашу карту

@@ -44,12 +44,11 @@ func (s *Service) IssueCard(id int64, issue, currency, number string, balance in
 }
 
 // SearchCard Проверяем карту, является ли она нашего банка
-func (s *Service) SearchCard(cardNum string) (card *Card, err error) {
+func (s *Service) SearchCard(cardNum string) (*Card, error) {
 	if strings.HasPrefix(cardNum, "5106 21") == true {
 		for _, row := range s.Cards {
 			if row.Number == cardNum {
-				card = row	// В принципе, можно наверно это и убрать
-				return card, nil
+				return row, nil
 			}
 		}
 	}

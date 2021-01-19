@@ -2,6 +2,8 @@ package transfer
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 
 	"github.com/sorokinkir/bgo4/pkg/card"
 )
@@ -14,6 +16,7 @@ type Service struct {
 }
 
 var (
+	ErrCardNumber                   = errors.New("Ошибка в номере карты")
 	ErrInvalidCard                  = errors.New("введеный номер карты не нашего банка")
 	ErrOwnToOwnCardTransfer         = errors.New("недостаточно денег для перевода или необходимо минимум 10 руб")
 	ErrOwnToUnknownCardTransfer     = errors.New("сумма не должна быть меньше 10 руб. и баланс должен быть больше или равен сумме перевода")
@@ -26,8 +29,52 @@ func NewService(cardsvc *card.Service, commission float64, rubMin int64) *Servic
 	return &Service{CardSvc: cardsvc, Commission: commission, RubMin: rubMin}
 }
 
+func isValid(number string) bool {
+	number = strings.ReplaceAll(number, " ", "")
+	if len(number) != 16 {
+		return false
+	}
+	numberCard := strings.Split(number, "")
+	numbersSlice := make([]int, 16)
+
+	for i, row := range numberCard {
+		var err interface{}
+		numbersSlice[i], err = strconv.Atoi(row)
+		if err != nil {
+			return false
+		}
+	}
+
+	return checkCardByLuhn(numbersSlice)
+}
+
+func checkCardByLuhn(numbers []int) bool {
+	var check int
+	for i := 0; i < 16; i += 2 {
+		cardNumber := numbers[i] * 2
+
+		if cardNumber > 9 {
+			cardNumber -= 9
+		}
+		numbers[i] = cardNumber
+	}
+
+	for _, i := range numbers {
+		check += i
+	}
+
+	if check%10 == 0 {
+		return true
+	}
+	return false
+}
+
 // Card2Card method
 func (s *Service) Card2Card(from, to string, amount int64) (total int64, err error) {
+	if !isValid(from) || !isValid(to) {
+		return amount, ErrCardNumber
+	}
+
 	fromCard, _ := s.CardSvc.SearchCard(from)
 	toCard, _ := s.CardSvc.SearchCard(to)
 

@@ -39,4 +39,6 @@ func main() {
 	} else {
 		fmt.Println(res)
 	}
+	// Служит для проверки номера карты
+	transfer.CheckCardNumber("79927398713")
 }
